@@ -38,13 +38,30 @@ const multiplyMatrices = (m1,m2) => {
   return m1;
 }
 
+const matrix1DtoND = (m,cols) => {
+	let i = 0;
+	const l = m.length;
+	const result = [];
+	while (i < l) {
+		result.push(new Array(cols));
+		for (let c = 0; c < cols; c++) {
+			result[result.length -1][c] = m[i]
+			i++;
+		}
+	}
+	return result;
+}
+
 // Esta función retorna una matriz que resula de la composición de trasn1 y trans2. Ambas 
 // matrices vienen como un arreglo 1D expresado en orden "column-major", y se deberá 
 // retornar también una matriz en orden "column-major". La composición debe aplicar 
 // primero trans1 y luego trans2. 
 function ComposeTransforms( trans1, trans2 )
 {
-	return Array(1,0,0,0,1,0,0,0,1);
+	const m1 = matrix1DtoND(trans1,3);
+	const m2 = matrix1DtoND(trans2,3);
+	const composeMatrix = multiplyMatrices(m1,m2);
+	return composeMatrix.flat();
 }
 
 
