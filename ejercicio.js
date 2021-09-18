@@ -1,3 +1,6 @@
+function toRadian(degree) {
+	return degree * Math.PI / 180;
+}
 // Esta función construye una matriz de transfromación de 3x3 en coordenadas homogéneas 
 // utilizando los parámetros de posición, rotación y escala. La estructura de datos a 
 // devolver es un arreglo 1D con 9 valores en orden "column-major". Es decir, para un 
@@ -11,45 +14,60 @@
 // Las rotaciones vienen expresadas en grados. 
 function BuildTransform( positionX, positionY, rotation, scale )
 {
-	const scaleMatrix = [[scale,0,0],[0,scale,0],[0,0,1]];
+	const scaleMatrix = [scale,0,0,0,scale,0,0,0,1];
 
-	const rotationMatrix = [[Math.cos(rotation), -Math.sin(rotation),0],[Math.sin(rotation),Math.cos(rotation),0],[0,0,1]];
+	const rotationMatrix = [Math.cos(toRadian(rotation)), 
+							Math.sin(toRadian(rotation)),
+							0,
+							-Math.sin(toRadian(rotation)),
+							Math.cos(toRadian(rotation)),
+							0,
+							0,
+							0,
+							1];
 
-	const traslationMatrix = [[1,0,positionX],[0,1,positionY],[0,0,1]];
+	const traslationMatrix = [1,0,0,0,1,0,positionX,positionY,1];
 
-	const transformationMatrix = multiplyMatrices(multiplyMatrices(scaleMatrix,rotationMatrix),traslationMatrix);
-	return transformationMatrix.flat();
+	const transformationMatrix = multiplyMatrices(multiplyMatrices(traslationMatrix,rotationMatrix),scaleMatrix);
+	return transformationMatrix;
 }
+
+function productoInterno(v1,v2){
+	let res = 0;
+	for(let i = 0 ; i < v1.length ; i++){
+		res += v1[i] * v2[i];
+	}
+	return res;
+}
+function dameFila(i, mat){
+	const res = []
+	for(let k = 0 ; k < 3 ; k++){
+		res.push(mat[i + 3 * k]);
+	}
+	return res;
+}
+function dameColumna(i, mat){
+	const res = []
+	for(let k = 0; k < 3 ; k++){
+		res.push(mat[k + 3*i]);
+	}
+	return res;
+}
+
 
 const multiplyMatrices = (m1,m2) => {
-  const m1Rows = m1.length;
-  const m1Cols = m1[0].length;
-  const m2Cols = m2[0].length;
-  const result = new Array(m1Rows);
-  for (let row = 0; row < m1Rows; row++) {
-	  result[row] = new Array(m2Cols);
-	  for (let column = 0; column < m2Cols; column++) {
-		  result[row][column] = 0;
-	  	  for (let i = 0; i < m1Cols; i++) {
-		      result[row][column] += m1[row][i] * m2[i][column]	  
-	      }
-	  }
-  }
-  return m1;
-}
-
-const matrix1DtoND = (m,cols) => {
-	let i = 0;
-	const l = m.length;
-	const result = [];
-	while (i < l) {
-		result.push(new Array(cols));
-		for (let c = 0; c < cols; c++) {
-			result[result.length -1][c] = m[i]
-			i++;
+	const res = [];
+	let fil1 = [];
+	let col2 = [];
+	for(let x = 0 ; x < 3 ; x++){
+		for(let y = 0; y < 3 ; y++){
+			col2 = dameColumna(x,m2);
+			fil1 = dameFila(y,m1)
+			res.push(productoInterno(fil1,col2));
 		}
+		
 	}
-	return result;
+	return res;
 }
 
 // Esta función retorna una matriz que resula de la composición de trasn1 y trans2. Ambas 
@@ -57,11 +75,11 @@ const matrix1DtoND = (m,cols) => {
 // retornar también una matriz en orden "column-major". La composición debe aplicar 
 // primero trans1 y luego trans2. 
 function ComposeTransforms( trans1, trans2 )
-{
-	const m1 = matrix1DtoND(trans1,3);
-	const m2 = matrix1DtoND(trans2,3);
-	const composeMatrix = multiplyMatrices(m1,m2);
-	return composeMatrix.flat();
+{	
+	return multiplyMatrices(trans2,trans1);
 }
+
+
+
 
 
