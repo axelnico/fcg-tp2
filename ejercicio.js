@@ -11,7 +11,31 @@
 // Las rotaciones vienen expresadas en grados. 
 function BuildTransform( positionX, positionY, rotation, scale )
 {
-	return Array(1,0,0,0,1,0,0,0,1);
+	const scaleMatrix = [[scale,0,0],[0,scale,0],[0,0,1]];
+
+	const rotationMatrix = [[Math.cos(rotation), -Math.sin(rotation),0],[Math.sin(rotation),Math.cos(rotation),0],[0,0,1]];
+
+	const traslationMatrix = [[1,0,positionX],[0,1,positionY],[0,0,1]];
+
+	const transformationMatrix = multiplyMatrices(multiplyMatrices(scaleMatrix,rotationMatrix),traslationMatrix);
+	return transformationMatrix.flat();
+}
+
+const multiplyMatrices = (m1,m2) => {
+  const m1Rows = m1.length;
+  const m1Cols = m1[0].length;
+  const m2Cols = m2[0].length;
+  const result = new Array(m1Rows);
+  for (let row = 0; row < m1Rows; row++) {
+	  result[row] = new Array(m2Cols);
+	  for (let column = 0; column < m2Cols; column++) {
+		  result[row][column] = 0;
+	  	  for (let i = 0; i < m1Cols; i++) {
+		      result[row][column] += m1[row][i] * m2[i][column]	  
+	      }
+	  }
+  }
+  return m1;
 }
 
 // Esta función retorna una matriz que resula de la composición de trasn1 y trans2. Ambas 
